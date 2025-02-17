@@ -375,13 +375,14 @@
                 about your ideas. Whether you need branding, web design, or
                 a general creative mind to work with, let's collaborate to bring your vision to life.
               </h3>
-              <form onsubmit="return false;" class="mt-10 w-full space-y-6">
+              <form id="contactForm" class="mt-10 w-full space-y-6">
                 <div class="space-y-2">
                   <label for="name" class="text-sm font-medium">Name</label>
                   <input
                     type="text"
                     id="name"
                     name="name"
+                    required
                     class="block w-full rounded-lg border border-white px-5 py-3 leading-6 placeholder-zinc-500 focus:border-purple-500 focus:ring focus:ring-purple-500/50 dark:border-purple-950 dark:bg-purple-950 dark:placeholder-zinc-400 dark:focus:border-purple-500"
                   />
                 </div>
@@ -391,17 +392,17 @@
                     type="email"
                     id="email"
                     name="email"
+                    required
                     class="block w-full rounded-lg border border-white px-5 py-3 leading-6 placeholder-zinc-500 focus:border-purple-500 focus:ring focus:ring-purple-500/50 dark:border-purple-950 dark:bg-purple-950 dark:placeholder-zinc-400 dark:focus:border-purple-500"
                   />
                 </div>
                 <div class="space-y-2">
-                  <label for="message" class="text-sm font-medium"
-                    >Message</label
-                  >
+                  <label for="message" class="text-sm font-medium">Message</label>
                   <textarea
                     id="message"
                     name="message"
                     rows="6"
+                    required
                     class="block w-full rounded-lg border border-white px-5 py-3 leading-6 placeholder-zinc-500 focus:border-purple-500 focus:ring focus:ring-purple-500/50 dark:border-purple-950 dark:bg-purple-950 dark:placeholder-zinc-400 dark:focus:border-purple-500"
                   ></textarea>
                 </div>
@@ -412,6 +413,37 @@
                   <span>Send Message</span>
                 </button>
               </form>
+              
+              <script>
+                document.getElementById("contactForm").addEventListener("submit", async function (e) {
+                  e.preventDefault();
+              
+                  const formData = {
+                    name: document.getElementById("name").value,
+                    email: document.getElementById("email").value,
+                    message: document.getElementById("message").value,
+                  };
+              
+                  try {
+                    const response = await fetch("/api/saveMessage", {
+                      method: "POST",
+                      headers: { "Content-Type": "application/json" },
+                      body: JSON.stringify(formData),
+                    });
+              
+                    if (response.ok) {
+                      alert("Message sent successfully!");
+                      this.reset(); // Clear the form after submission
+                    } else {
+                      alert("Failed to send message. Try again!");
+                    }
+                  } catch (error) {
+                    console.error("Error:", error);
+                    alert("An error occurred. Please try again later.");
+                  }
+                });
+              </script>
+              
             </div>
           </div>
           <!-- END Contact -->
