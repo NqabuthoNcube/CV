@@ -1,0 +1,500 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Student Dashboard • Advanced</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet"/>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<style>
+  :root{
+    --bg1:#0f172a; --bg2:#16233e;
+    --card: rgba(255,255,255,0.06);
+    --glass-border: rgba(255,255,255,0.08);
+    --accent1:#38bdf8; --accent2:#0ea5e9;
+    --muted: rgba(226,232,240,0.75);
+  }
+
+  *{box-sizing:border-box;}
+  body{
+    margin:0; font-family:Inter,system-ui;
+    background: linear-gradient(135deg,var(--bg1),var(--bg2));
+    color:#e6eef6; padding:20px;
+  }
+
+  header{text-align:center;margin-bottom:20px;}
+  header h1{
+    font-size:30px;
+    background: linear-gradient(90deg,var(--accent1),var(--accent2));
+    -webkit-background-clip:text;color:transparent;
+    margin:0;
+  }
+  header p{margin:5px 0 30px;opacity:0.8;}
+
+  .layout{
+    max-width:1100px;margin:0 auto;
+    display:grid;grid-template-columns:350px 1fr;gap:22px;
+  }
+  @media (max-width:980px){
+    .layout{grid-template-columns:1fr;padding:0 6px;}
+  }
+
+  .card{
+    background:var(--card);border-radius:14px;padding:18px;
+    border:1px solid var(--glass-border);
+    backdrop-filter:blur(8px);
+  }
+
+  .profile{display:flex;gap:12px;margin-bottom:12px;}
+  .profile img{width:66px;height:66px;border-radius:10px;object-fit:cover;}
+  .muted{color:var(--muted);font-size:13px;}
+
+  .stat-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
+  .stat{background:rgba(255,255,255,0.03);padding:10px;border-radius:10px;text-align:center;}
+  .stat strong{font-size:19px;}
+
+  .btn{
+    background:linear-gradient(90deg,var(--accent1),var(--accent2));
+    color:#042028;padding:10px 12px;border-radius:10px;
+    text-decoration:none;font-weight:700;border:0;cursor:pointer;
+  }
+
+  .right{display:flex;flex-direction:column;gap:16px;}
+
+  .sem-list{display:grid;gap:12px;}
+  .sem{
+    display:flex;gap:12px;align-items:center;
+    background:rgba(255,255,255,0.03);
+    padding:14px;border-radius:12px;
+    border:1px solid rgba(255,255,255,0.05);
+  }
+
+  .circle{width:84px;height:84px;flex:0 0 84px;}
+
+  .sem-body h3{margin:0 0 4px;}
+  .sem-body p{margin:0;font-size:13px;color:var(--muted);}
+
+  .mini{
+    background:rgba(255,255,255,0.04);
+    padding:6px 8px;border-radius:8px;
+    color:var(--muted);font-size:13px;cursor:pointer;
+  }
+
+  /* CHART FIX */
+  .chart-wrapper{
+    width:100%;height:260px; /* FIXED HEIGHT */
+    position:relative;background:transparent;
+    border-radius:12px;
+  }
+  canvas{
+    width:100% !important;
+    height:260px !important;  /* FIXED HEIGHT */
+    max-height:260px !important;
+    background:transparent;
+    border-radius:10px;
+  }
+
+  /* Gallery */
+  .gallery{display:grid;grid-template-columns:repeat(auto-fill, minmax(120px,1fr));gap:10px;}
+  .gallery img{
+    width:100%;height:90px;object-fit:cover;cursor:pointer;border-radius:10px;
+    border:1px solid rgba(255,255,255,0.06);
+  }
+
+  /* Modal */
+  .modal{
+    display:none;position:fixed;inset:0;background:rgba(0,0,0,0.85);
+    align-items:center;justify-content:center;padding:20px;z-index:2000;
+  }
+  .modal.open{display:flex;}
+  .modal img{max-width:96%;max-height:96%;border-radius:8px;}
+  .close{position:fixed;right:20px;top:20px;background:rgba(255,255,255,0.2);padding:8px 10px;border-radius:8px;color:white;}
+
+  /* Edit modal */
+  .edit-modal{
+    display:none;position:fixed;inset:0;background:rgba(0,0,0,0.7);
+    align-items:center;justify-content:center;z-index:3000;
+  }
+  .edit-modal.open{display:flex;}
+  .edit-card{
+    background:var(--card);padding:18px;border-radius:14px;width:380px;
+    border:1px solid var(--glass-border);
+  }
+  .edit-card label{display:block;margin-top:10px;font-size:13px;color:var(--muted);}
+  .edit-card input{width:100%;padding:8px;border-radius:8px;margin-top:6px;
+    background:rgba(255,255,255,0.04);color:white;border:1px solid rgba(255,255,255,0.05);}
+</style>
+</head>
+
+<body>
+
+<header>
+  <h1>Student Dashboard</h1>
+  <p>Progress • SGPA charts • Certificates • AI-style insights • CGPA</p>
+</header>
+
+<div class="layout">
+
+  <!-- LEFT PANEL -->
+  <aside class="card">
+    <div class="profile">
+      <img src="assets/Me1.jpg" alt="">
+      <div>
+        <div style="font-weight:700;font-size:16px">Nqabutho Ncube</div>
+        <div class="muted">BCA — Final Year</div>
+      </div>
+    </div>
+
+    <div>
+      <div class="muted">Current CGPA</div>
+      <div style="display:flex;align-items:center;gap:10px;margin-top:7px;">
+        <div style="font-size:30px;font-weight:800" id="current-cgpa">-</div>
+        <div class="muted">based on entered semesters</div>
+      </div>
+    </div>
+
+    <div class="stat-grid" style="margin-top:16px;">
+      <div class="stat">
+        <div class="muted">Semesters</div>
+        <strong id="stat-sems">4</strong>
+      </div>
+      <div class="stat">
+        <div class="muted">Certificates</div>
+        <strong id="stat-certs">4</strong>
+      </div>
+    </div>
+
+    <div style="margin-top:20px;">
+      <div style="font-weight:700">Performance Summary</div>
+      <p class="muted" id="ai-summary" style="margin-top:6px;">Loading...</p>
+    </div>
+
+    <div style="margin-top:14px;display:flex;gap:8px;flex-wrap:wrap;">
+      <button class="btn" id="recalc">Recalculate</button>
+      <button class="btn" id="download-report">Report</button>
+    </div>
+  </aside>
+
+  <!-- RIGHT PANEL -->
+  <section class="right">
+
+    <!-- Semesters -->
+    <div class="card">
+      <h4>Semester Overview</h4>
+      <div id="sem-list" class="sem-list"></div>
+    </div>
+
+    <!-- Charts -->
+    <div class="charts" style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
+      <div class="card">
+        <h4>SGPA by Semester</h4>
+        <div class="chart-wrapper">
+          <canvas id="sgpaChart"></canvas>
+        </div>
+      </div>
+      <div class="card">
+        <h4>CGPA Trend</h4>
+        <div class="chart-wrapper">
+          <canvas id="cgpaChart"></canvas>
+        </div>
+      </div>
+    </div>
+
+    <!-- Certificates -->
+    <div class="card">
+      <h4>Certificates & Grade Cards</h4>
+      <div class="gallery" id="certGallery"></div>
+    </div>
+
+  </section>
+</div>
+
+<!-- Image Modal -->
+<div class="modal" id="imageModal">
+  <button class="close" onclick="closeImageModal()">✕</button>
+  <img id="modalImg">
+</div>
+
+<!-- Edit Modal -->
+<div class="edit-modal" id="editModal">
+  <div class="edit-card">
+    <h3>Edit Semester</h3>
+    <label>Name</label><input id="edit-name">
+    <label>Registered Credits</label><input id="edit-registered" type="number">
+    <label>Earned Credits</label><input id="edit-earned" type="number">
+    <label>SGPA</label><input id="edit-sgpa" type="number" step="0.01">
+    <div style="display:flex;gap:8px;margin-top:16px;justify-content:flex-end;">
+      <button class="btn" id="saveEdit">Save</button>
+      <button class="btn" onclick="closeEditModal()" style="background:transparent;color:white;border:1px solid rgba(255,255,255,0.3)">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ======================================================
+   SEMESTER DATA
+====================================================== */
+let semesters = [
+  { id:'sem1', name:'Semester I', registeredCredits:20, earnedCredits:20, sgpa:7.05, img:'assets/photo_2025-11-17_22-49-38.jpg' },
+  { id:'sem2', name:'Semester II', registeredCredits:20, earnedCredits:18, sgpa:5.65, img:'assets/photo_2025-11-17_22-49-44.jpg' },
+  { id:'sem3', name:'Semester III', registeredCredits:19, earnedCredits:19, sgpa:4.79, img:'assets/photo_2025-11-17_22-49-47.jpg' },
+  { id:'sem4', name:'Semester IV', registeredCredits:20, earnedCredits:20, sgpa:5.55, img:'assets/photo_2025-11-17_22-49-35.jpg' }
+];
+
+const certificates = [
+  {src:'assets/SHI.jpg'},
+  {src:'assets/Japanese.jpeg'},
+  {src:'assets/NPTEL.jpeg'}
+];
+
+/* ======================================================
+   CGPA CALCULATOR
+====================================================== */
+function computeCGPA(){
+  let totalW = 0, totalC = 0;
+  semesters.forEach(s=>{
+    totalW += s.sgpa * s.earnedCredits;
+    totalC += s.earnedCredits;
+  });
+  return +(totalW / totalC).toFixed(2);
+}
+
+/* ======================================================
+   RENDER SEMESTERS
+====================================================== */
+function renderSemesters(){
+  const box = document.getElementById('sem-list');
+  box.innerHTML = '';
+
+  semesters.forEach((s, i)=>{
+    const pct = Math.round((s.earnedCredits / s.registeredCredits) * 100);
+
+    const el = document.createElement('div');
+    el.className = 'sem';
+    el.innerHTML = `
+      <div class="circle">
+        <svg viewBox="0 0 36 36" width="84" height="84">
+          <defs>
+            <linearGradient id="grad${i}" x1="0" x2="1">
+              <stop offset="0" stop-color="var(--accent1)"/>
+              <stop offset="1" stop-color="var(--accent2)"/>
+            </linearGradient>
+          </defs>
+
+          <path d="M18 2.0845
+                   a 15.9155 15.9155 0 0 1 0 31.831
+                   a 15.9155 15.9155 0 0 1 0 -31.831"
+                fill="none" stroke="rgba(255,255,255,0.06)" stroke-width="3"/>
+
+          <path d="M18 2.0845
+                   a 15.9155 15.9155 0 0 1 0 31.831
+                   a 15.9155 15.9155 0 0 1 0 -31.831"
+                fill="none" stroke="url(#grad${i})"
+                stroke-width="3" stroke-dasharray="${pct},100"
+                stroke-linecap="round"/>
+
+          <text x="18" y="20.5" font-size="6" text-anchor="middle" fill="#e6eef6">${pct}%</text>
+        </svg>
+      </div>
+
+      <div class="sem-body">
+        <h3>${s.name}</h3>
+        <p>SGPA: <strong>${s.sgpa}</strong> • Earned ${s.earnedCredits}/${s.registeredCredits} credits</p>
+      </div>
+
+      <div>
+        <div class="mini" onclick="openEdit('${s.id}')">✏️ Edit</div>
+        <div class="mini" onclick="openImage('${s.img}')">🔍 View</div>
+      </div>
+    `;
+    box.appendChild(el);
+  });
+
+  document.getElementById('stat-sems').textContent = semesters.length;
+}
+
+/* ======================================================
+   GALLERY
+====================================================== */
+function renderGallery(){
+  const g = document.getElementById('certGallery');
+  g.innerHTML = '';
+  [...certificates, ...semesters.map(s=>({src:s.img}))].forEach(c=>{
+    const img = document.createElement('img');
+    img.src = c.src;
+    img.onclick = ()=>openImage(c.src);
+    g.appendChild(img);
+  });
+}
+
+/* ======================================================
+   MODAL
+====================================================== */
+function openImage(src){
+  document.getElementById('modalImg').src = src;
+  document.getElementById('imageModal').classList.add('open');
+}
+function closeImageModal(){
+  document.getElementById('imageModal').classList.remove('open');
+}
+
+/* ======================================================
+   EDIT SEMESTER
+====================================================== */
+let editingId = null;
+
+function openEdit(id){
+  editingId = id;
+  const s = semesters.find(x=>x.id===id);
+
+  document.getElementById('edit-name').value = s.name;
+  document.getElementById('edit-registered').value = s.registeredCredits;
+  document.getElementById('edit-earned').value = s.earnedCredits;
+  document.getElementById('edit-sgpa').value = s.sgpa;
+
+  document.getElementById('editModal').classList.add('open');
+}
+function closeEditModal(){
+  document.getElementById('editModal').classList.remove('open');
+}
+
+document.getElementById('saveEdit').onclick = ()=>{
+  const s = semesters.find(x=>x.id===editingId);
+
+  s.name = document.getElementById('edit-name').value;
+  s.registeredCredits = Number(document.getElementById('edit-registered').value);
+  s.earnedCredits = Number(document.getElementById('edit-earned').value);
+  s.sgpa = Number(document.getElementById('edit-sgpa').value);
+
+  renderAll();
+  closeEditModal();
+};
+
+/* ======================================================
+   CHARTS (WITH FIX)
+====================================================== */
+let sgpaChart = null;
+let cgpaChart = null;
+
+function buildCharts(){
+  const labels = semesters.map(s=>s.name);
+  const sgpas = semesters.map(s=>s.sgpa);
+
+  // SGPA BAR CHART  
+  if (sgpaChart) sgpaChart.destroy();
+  sgpaChart = new Chart(document.getElementById('sgpaChart'), {
+    type:'bar',
+    data:{
+      labels,
+      datasets:[{
+        label:'SGPA',
+        data:sgpas,
+        backgroundColor:'rgba(56,189,248,0.9)',
+        borderRadius:6
+      }]
+    },
+    options:{
+      responsive:true,
+      maintainAspectRatio:false,
+      aspectRatio:2,
+      scales:{y:{beginAtZero:true,max:10}},
+      plugins:{legend:{display:false}}
+    }
+  });
+
+  // CGPA LINE CHART
+  const cgpaPoints = [];
+  let num=0, denom=0;
+  semesters.forEach(s=>{
+    num += s.sgpa * s.earnedCredits;
+    denom += s.earnedCredits;
+    cgpaPoints.push(+(num/denom).toFixed(2));
+  });
+
+  if (cgpaChart) cgpaChart.destroy();
+  cgpaChart = new Chart(document.getElementById('cgpaChart'), {
+    type:'line',
+    data:{
+      labels,
+      datasets:[{
+        label:'CGPA',
+        data:cgpaPoints,
+        borderColor:'rgba(14,165,233,0.9)',
+        backgroundColor:'rgba(14,165,233,0.2)',
+        fill:true,
+        tension:0.35
+      }]
+    },
+    options:{
+      responsive:true,
+      maintainAspectRatio:false,
+      aspectRatio:2,
+      scales:{y:{beginAtZero:true,max:10}},
+      plugins:{legend:{display:false}}
+    }
+  });
+}
+
+/* ======================================================
+   AI SUMMARY
+====================================================== */
+function aiSummary(){
+  const avg = semesters.reduce((a,b)=>a+b.sgpa,0) / semesters.length;
+  const first = semesters[0].sgpa;
+  const last = semesters[semesters.length-1].sgpa;
+
+  let summary = '';
+
+  if (avg >= 7) summary += 'Strong overall academic performance. ';
+  else if (avg >= 6) summary += 'Good performance with steady progress potential. ';
+  else summary += 'Performance is average; targeted improvement recommended. ';
+
+  if (last > first + 0.3) summary += 'Trend shows improvement over semesters. ';
+  else if (last < first - 0.3) summary += 'Recent decline suggests reviewing difficult subjects. ';
+  else summary += 'Performance is relatively stable across semesters. ';
+
+  document.getElementById('ai-summary').textContent = summary;
+}
+
+/* ======================================================
+   RENDER ALL
+====================================================== */
+function renderAll(){
+  renderSemesters();
+  renderGallery();
+  buildCharts();
+
+  const cgpa = computeCGPA();
+  document.getElementById('current-cgpa').textContent = cgpa;
+
+  aiSummary();
+}
+
+/* ======================================================
+   REPORT DOWNLOAD
+====================================================== */
+document.getElementById('download-report').onclick = ()=>{
+  const data = {
+    generated:new Date().toISOString(),
+    semesters,
+    cgpa: computeCGPA()
+  };
+  const blob = new Blob([JSON.stringify(data,null,2)],{type:'application/json'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = 'report.json'; a.click();
+};
+
+/* ======================================================
+   RECALC
+====================================================== */
+document.getElementById('recalc').onclick = renderAll;
+
+/* INIT */
+renderAll();
+</script>
+
+</body>
+</html>
