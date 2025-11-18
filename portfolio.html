@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Portfolio</title>
+
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+
+  <style>
+    body {
+      margin: 0;
+      font-family: Inter, sans-serif;
+      background: #0f172a;
+      color: #e2e8f0;
+      padding: 20px;
+    }
+
+    h1 {
+      text-align: center;
+      color: #38bdf8;
+    }
+
+    .container {
+      max-width: 1000px;
+      margin: 0 auto;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+      gap: 20px;
+      margin-top: 20px;
+    }
+
+    .card {
+      background: rgba(255,255,255,0.05);
+      padding: 15px;
+      border-radius: 12px;
+      border: 1px solid rgba(255,255,255,0.06);
+    }
+
+    .card h3 {
+      margin-top: 0;
+    }
+
+    a.back-btn {
+      display: inline-block;
+      margin-top: 20px;
+      background: #38bdf8;
+      padding: 10px 16px;
+      border-radius: 8px;
+      color: #0f172a;
+      font-weight: 600;
+      text-decoration: none;
+    }
+  </style>
+</head>
+
+<body>
+
+<h1>Portfolio Projects</h1>
+
+<div class="container">
+
+  <div class="grid">
+
+    <div class="card">
+      <h3>React Portfolio</h3>
+      <p>Fully responsive portfolio built with React, Vite, and Tailwind.</p>
+    </div>
+
+    <div class="card">
+      <h3>AI Chat UI</h3>
+      <p>Chat interface with streaming responses, built using FastAPI backend.</p>
+    </div>
+
+    <div class="card">
+      <h3>Dashboard App</h3>
+      <p>Analytics dashboard showing statistics with charts.</p>
+    </div>
+
+  </div>
+
+  <a class="back-btn" href="index.html">← Back to Main CV</a>
+
+</div>
+
+</body>
+</html>
